@@ -3,12 +3,15 @@ import express from "express"
 import fs from "fs"
 import path from "path";
 import cors from "cors";
+import multer from "multer";
 const app = express()
 
 app.use(cors({
     origin: "*",
 }))
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use("/files", express.static("./input"));
 app.get("/",(req,res)=>{
     
@@ -28,6 +31,17 @@ app.get("/get-pdf-files",(req,res)=>{
 })
 
 
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, './input')
+    },
+    filename: function (req, file, cb) {
+      
+      cb(null, file.originalname )
+    }
+  })
+  
+  const upload = multer({ storage: storage })
 app.get("/data/:filename",(req,res)=>{
     try {
         const filename = req.params.filename
@@ -40,6 +54,17 @@ app.get("/data/:filename",(req,res)=>{
         
     }
 })
+
+app.post("/upload-pdf", upload.single("file"), (req, res) => {
+    try {
+        console.log("Uploaded file:", req.file); // Access the uploaded file information
+        res.json({ success: true, file: req.file });
+    } catch (error) {
+        console.error("File upload error:", error);
+        res.status(500).json({ success: false, message: "File upload failed" });
+    }
+});
+
 
 app.listen(3000,()=>{
     console.log("server is running on port 3000")
