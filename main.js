@@ -42,6 +42,18 @@ const storage = multer.diskStorage({
   })
   
   const upload = multer({ storage: storage })
+
+  const storage2 = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, './output')
+    },
+    filename: function (req, file, cb) {
+      
+      cb(null, file.originalname )
+    }
+  })
+  
+  const uploadJson = multer({ storage: storage2 })
 app.get("/data/:filename",(req,res)=>{
     try {
         const filename = req.params.filename
@@ -56,6 +68,16 @@ app.get("/data/:filename",(req,res)=>{
 })
 
 app.post("/upload-pdf", upload.single("file"), (req, res) => {
+    try {
+        console.log("Uploaded file:", req); // Access the uploaded file information
+        res.json({ success: true, file: req.file });
+    } catch (error) {
+        console.error("File upload error:", error);
+        res.status(500).json({ success: false, message: "File upload failed" });
+    }
+});
+
+app.post("/upload-json", uploadJson.single("file"), (req, res) => {
     try {
         console.log("Uploaded file:", req.file); // Access the uploaded file information
         res.json({ success: true, file: req.file });
