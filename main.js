@@ -1,11 +1,11 @@
-import fs from 'fs/promises';
-import { isUtf8 } from "buffer";
+
 import express from "express"
 // import fs from "fs"
-import path from "path";
 import cors from "cors";
 import multer from "multer";
-import axios from "axios";
+
+import { sendFildeData, uploadPdf, getPdfFiles, uploadJsonFiles, parsePdf } from './controllers/pdf.controllers.js';
+import { upload } from './middlewares/multer.js';
 const app = express()
 
 app.use(cors({
@@ -15,35 +15,15 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/files", express.static("./input"));
+
+
 app.get("/",(req,res)=>{
     
     res.send("hello world")
 })
 
-app.get("/get-pdf-files",async (req,res)=>{
-    try {
-        const folderFiles = await fs.readdir("./input","utf-8")
-        console.log(folderFiles)
-        res.json({sucess:true,folderFiles})
-    } catch (error) {
-        console.log(error)
-        res.json({sucess:false,error})
-        
-    }
-})
+app.get("/get-pdf-files",getPdfFiles)
 
-
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      cb(null, './input')
-    },
-    filename: function (req, file, cb) {
-      
-      cb(null, file.originalname )
-    }
-  })
-  
-  const upload = multer({ storage: storage })
 
   const storage2 = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -56,18 +36,7 @@ const storage = multer.diskStorage({
   })
   
   const uploadJson = multer({ storage: storage2 })
-app.get("/data/:filename",async (req,res)=>{
-    try {
-        const filename = req.params.filename
-    let data =await fs.readFile(`./output/${filename}.json`,"utf-8")
-    res.send(JSON.parse(data))
-    console.log(filename,data)
-    } catch (error) {
-        console.log(error)
-        res.status(404).send({message:"file not found"})
-        
-    }
-})
+app.get("/data/:filename",sendFildeData)
 
 // const FormData = require('form-data');
 
@@ -83,50 +52,17 @@ app.get("/data/:filename",async (req,res)=>{
 //     }
 // });
 
-app.post("/upload-pdf", upload.single("file"), async (req, res) => {
-    // const outputDir = path.join(__dirname, 'output');
-// fs.mkdir(outputDir, { recursive: true }).catch(console.error);
-    try {
-        console.log("Uploaded file:", req.file);
-        console.log("filedata", req.body.filedata);
-
-       
-
-        
-       
-
-        // Write the JSON file
-        await fs.writeFile(
-            `./output/${req.file.filename}.json`,
-            req.body.filedata,
-            'utf8'
-        );
-
-        res.json({ 
-            success: true, 
-            file: req.file,
-        });
-
-    } catch (error) {
-        console.error("File upload error:", error);
-        res.status(500).json({ 
-            success: false, 
-            message: "File upload failed",
-            error: error.message 
-        });
-    }
-});
+app.post("/upload-pdf", upload.single("file"), uploadPdf);
 
 
-app.post("/upload-json", uploadJson.single("file"), (req, res) => {
-    try {
-        console.log("Uploaded file:", req.file); // Access the uploaded file information
-        res.json({ success: true, file: req.file });
-    } catch (error) {
-        console.error("File upload error:", error);
-        res.status(500).json({ success: false, message: "File upload failed" });
-    }
-});
+app.post("/upload-json", uploadJson.single("file"), uploadJsonFiles);
+
+
+// import multer from 'multer';
+
+// Use memory storage to keep files in memory as buffers
+const upload1 = multer({ storage: multer.memoryStorage() });
+app.post('/parse-pdf', upload1.single('files'), parsePdf);
 
 
 app.listen(3000,()=>{
