@@ -62,7 +62,7 @@ app.post("/upload-json", uploadJson.single("file"), uploadJsonFiles);
 
 // Use memory storage to keep files in memory as buffers
 const upload1 = multer({ storage: multer.memoryStorage() });
-app.post('/parse-pdf', upload1.single('files'), parsePdf);
+app.post('/parse-pdf', upload.single('files'), parsePdf);
 
 
 app.listen(3000,()=>{
