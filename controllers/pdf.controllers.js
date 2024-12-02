@@ -68,58 +68,6 @@ export const getPdfFiles =async (req,res)=>{
     }
 }
 
-// export const parsePdf = async (req, res) => {
-//     try {
-//       const { strategy, coordinates } = req.body;
-  
-//       if (!req.file) {
-//         return res.status(400).json({ error: 'No file uploaded' });
-//       }
-  
-//       if (!strategy || !coordinates) {
-//         return res.status(400).json({ error: 'Missing strategy or coordinates' });
-//       }
-  
-  
-//       // Prepare the FormData
-//     //   const fileStream = await fs.createReadStream(req.file.path);
-//       const formData = new FormData();
-//       formData.append('strategy', strategy); // Add strategy
-//       formData.append('coordinates', coordinates); // Serialize coordinates if needed
-
-//       const raw =  readFileSync("./../input/DBMS_Notes.pdf")
-//       formData.append('files', raw, { 
-//         filename: 'DBMS_Notes.pdf', 
-//         contentType: 'application/pdf' 
-//     });
-//       console.log(formData)
-//       // Send the request to Unstructured API
-//       const response = await fetch('https://api.unstructuredapp.io/general/v0/general', {
-//         method: 'POST',
-//         ...formData.getHeaders(),
-//        formData,
-//       });
-  
-//       // Parse the response
-//       const data = await response.json();
-  
-//       // Handle API errors
-//       if (!response.ok) {
-//         console.error('Unstructured API Error:', data);
-//         return res.status(response.status).json({ error: data });
-//       }
-  
-//       // Send the response to the client
-//       res.json(data);
-//     } catch (error) {
-//       console.error('Error processing PDF:', error);
-//       res.status(500).json({ error: 'Failed to process PDF' });
-//     }
-//   };
-
-
-
-
 export const parsePdf = async (req, res) => {
     try {
         const { strategy, coordinates } = req.body;
@@ -135,14 +83,13 @@ export const parsePdf = async (req, res) => {
 
         // Prepare FormData
         const formData = new FormData();
-        formData.append('strategy', strategy); // Add strategy
-        formData.append('coordinates', coordinates); // Add coordinates
-
+        formData.append('strategy', strategy); 
+        formData.append('coordinates', coordinates);
         // Append the uploaded file
-        const raw = readFileSync(req.file.path); // Path to the uploaded file
+        const raw = readFileSync(req.file.path); 
         formData.append('files', raw, { 
-            filename: req.file.originalname, // Use the original filename
-            contentType: req.file.mimetype, // Use the uploaded file's MIME type
+            filename: req.file.originalname, 
+            contentType: req.file.mimetype, 
         });
 
         
@@ -150,16 +97,14 @@ export const parsePdf = async (req, res) => {
         const response = await fetch('https://api.unstructuredapp.io/general/v0/general', {
             method: 'POST',
             headers: {
-                'unstructured-api-key': 'FauAsZ3loP6hpfBQZwPvN8U5kY4pW2', // Replace with your API key
+                'unstructured-api-key': 'FauAsZ3loP6hpfBQZwPvN8U5kY4pW2', 
                 ...formData.getHeaders(), // Add FormData headers
             },
-            body: formData, // Set the FormData object as the body
+            body: formData, 
         });
 
-        // Parse the API response
         const data = await response.json();
 
-        // Handle API errors
         if (!response.ok) {
             console.error('Unstructured API Error:', data);
             return res.status(response.status).json({ error: data });
@@ -171,8 +116,7 @@ export const parsePdf = async (req, res) => {
             'utf8'
         );
 
-        // Send the response to the client
-        res.json({success:true ,data});
+        res.json({success:true,message:"File Uploaded Successfully" ,data});
     } catch (error) {
         console.error('Error processing PDF:', error);
         res.status(500).json({ error: 'Failed to process PDF' });
