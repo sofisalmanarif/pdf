@@ -70,14 +70,16 @@ export const getPdfFiles =async (req,res)=>{
 
 export const parsePdf = async (req, res) => {
     try {
-        const { strategy, coordinates } = req.body;
+        const { strategy, coordinates,chunking_strategy } = req.body;
+
+        console.log(strategy, coordinates,chunking_strategy)
 
         // Validate input
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        if (!strategy || !coordinates) {
+        if (!strategy || !coordinates ) {
             return res.status(400).json({ error: 'Missing strategy or coordinates' });
         }
 
@@ -85,6 +87,7 @@ export const parsePdf = async (req, res) => {
         const formData = new FormData();
         formData.append('strategy', strategy); 
         formData.append('coordinates', coordinates);
+        formData.append('chunking strategy', chunking_strategy);
         // Append the uploaded file
         const raw = readFileSync(req.file.path); 
         formData.append('files', raw, { 
